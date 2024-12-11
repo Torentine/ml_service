@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Просмотр</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"> </head>
+<body>
+    <div class="container">
+        <section class="photo">
+            <h2>Ваше изображение:</h2>
+            <div class="graph">
+                <img src="{% static image_path %}" width="480" height="360" alt="">
+            </div>
+        </section>
+        <form action="{% url 'predict' %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Выполнить сегментацию</button>
+        </form>
+    </div>
+</body>
+</html>
