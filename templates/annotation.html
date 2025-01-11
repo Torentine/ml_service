@@ -1,0 +1,218 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактирование изображения</title>
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" type="image/svg+xml">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .header {
+            background-color: #343a40;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .header-title {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .canvas-container {
+            margin-bottom: 2rem;
+            border: 2px solid #dee2e6;
+            padding: 1rem;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background-color: #218838;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+
+        .btn-light {
+            background-color: #f8f9fa;
+            color: #212529;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-light:hover {
+            background-color: #e2e6ea;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1 class="header-title">Редактирование изображения</h1>
+    </header>
+
+    <main class="main-content">
+        <section class="canvas-container">
+            <canvas id="imageCanvas" class="canvas"></canvas>
+        </section>
+
+        <section class="controls">
+            <button class="btn btn-primary" onclick="addMask()">Добавить контур</button>
+            <button class="btn btn-secondary" onclick="saveMask()">Скачать и отправить</button>
+            <button class="btn btn-warning" onclick="delMask()">Сбросить</button>
+            <button class="btn btn-light" onclick="watch()">Вернуться к просмотру</button>
+        </section>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('imageCanvas');
+        const ctx = canvas.getContext('2d');
+        let points = [];
+        let isDrawing = false;
+
+        const img = new Image();
+        img.src = "{% static img %}";
+        img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+        };
+
+        canvas.addEventListener('mousedown', (event) => {
+            isDrawing = true;
+            const { x, y } = getMousePos(event);
+            points.push({ x, y });
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        });
+
+        canvas.addEventListener('mousemove', (event) => {
+            if (!isDrawing) return;
+            const { x, y } = getMousePos(event);
+            points.push({ x, y });
+            ctx.lineTo(x, y);
+            ctx.strokeStyle = "red";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+            ctx.closePath();
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDrawing = false;
+            ctx.closePath();
+        });
+
+        function getMousePos(event) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top
+            };
+        }
+
+        function saveMask() {
+            fetch('/save_mask/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ points }),
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.redirect_url) {
+                      window.location.href = data.redirect_url;
+                  }
+                  if (data.redirect_main) {
+                      setTimeout(() => {
+                          window.location.href = data.redirect_main;
+                      }, 1000);
+                  }
+              });
+        }
+
+        function addMask() {
+            fetch('/add_mask/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ points }),
+            });
+
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+
+        function delMask() {
+            fetch('/del_mask/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+
+        function watch() {
+            return window.location.replace("{% url 'results' %}");
+        }
+    </script>
+</body>
+</html>

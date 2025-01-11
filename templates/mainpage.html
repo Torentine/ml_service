@@ -3,16 +3,75 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Загрузка изображения</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}"> </head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главная страница</title>
+    <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg" type="image/svg+xml">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 400px;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2rem;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        h2 {
+            font-size: 1.5rem;
+            color: #333333;
+            margin-bottom: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        form button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        form button:hover {
+            background-color: #0056b3;
+        }
+        .form-control {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+        }
+    </style>
+</head>
 <body>
     <div class="container">
-        <h2>Загрузите изображение</h2>
+        <h1>Kentiki</h1>
+        <h2>Загрузите файл DICOM (.dcm)</h2>
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            {{ form }}
-            <button type="submit">Отправить</button>
+            <div class="form-control">
+                {{ form.as_p }}
+            </div>
+            <button type="submit">Загрузить</button>
         </form>
     </div>
 </body>
 </html>
+
